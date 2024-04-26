@@ -1,0 +1,26 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    name: Deploy to Google Apps Script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm ci
+      # - run: npm test
+      - name: Deploy
+        uses: daikikatsuragawa/clasp-action@v1.1.0
+        with:
+          accessToken: ${{ secrets.ACCESS_TOKEN }}
+          idToken: ${{ secrets.ID_TOKEN }}
+          refreshToken: ${{ secrets.REFRESH_TOKEN }}
+          clientId: ${{ secrets.CLIENT_ID }}
+          clientSecret: ${{ secrets.CLIENT_SECRET }}
+          scriptId: ${{ secrets.SCRIPT_ID }}
+          command: 'push'
