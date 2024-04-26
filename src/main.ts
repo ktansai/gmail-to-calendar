@@ -1,46 +1,34 @@
-function chatGptSample(): void {
-  // スクリプトプロパティからOpenAIのAPIキーを取得
-  const apiKey: string | null = PropertiesService.getScriptProperties().getProperty("OPEN_AI_API_KEY");
-  if (!apiKey) {
-    console.error("API key is not set in the script properties.");
-    return;
-  }
+const systemContent = 
+`
+メールの内容を読んで、JSON形式で回答してください。
+フォーマットは下記を参考にしてください。
+{
+  "title": "映画:トイ・ストーリー", 
+  "startDate":"2024-03-31T10:30:00",
+  "endDate":"2024-03-31T11:30:00",
+  "location":"TOHOシネマズ六本木ヒルズ"
+}
+もし、startDateが不明だったり、予定が含まれないメールの場合は、Jsonの代わりに、"null"だけを返してください
+タイトルは、明確に、誰と、何をするか、などがわかるようにしてください。
+locationが不明の場合は "" を設定してください。
+また、startDateのみが分かる場合は、endDateは1時間後の時間を設定してください。
+メール1件に対して、最大1つの予定を返してください。配列では返さないでください。
+メールの送信日時をstartDateとして扱わないように気をつけてください。
+`
 
-  // ChatGPT APIのエンドポイントURL
-  const apiUrl: string = 'https://api.openai.com/v1/chat/completions';
 
-  // 送信するメッセージ
-  const messages: { role: string; content: string }[] = [
-    { role: 'system', content: '端的に答えてください。答えは単語でお願いします。' },
-    { role: 'user', content: '日本で最も北に位置する都道府県は？' }
-  ];
+function main(){
+  const mails = getRecentEmails(10);
 
-  // APIリクエスト用のヘッダー
-  const headers: GoogleAppsScript.URL_Fetch.HttpHeaders = {
-    'Authorization': 'Bearer ' + apiKey,
-    'Content-Type': 'application/json'
-  };
-
-  // APIリクエストのオプション
-  const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
-    muteHttpExceptions: true,
-    method: 'post',
-    headers: headers,
-    payload: JSON.stringify({
-      model: 'gpt-3.5-turbo',
-      max_tokens: 2048,
-      temperature: 0,
-      messages: messages
-    })
-  };
-
-  // APIリクエストを送信し、レスポンスを受け取る
-  try {
-    const responseText: string = UrlFetchApp.fetch(apiUrl, options).getContentText();
-    const response = JSON.parse(responseText);
-    // レスポンスの内容をログに出力
-    console.log(response.choices[0].message.content);
-  } catch (error) {
-    console.error("Error during API request:", error);
-  }
+  mails.forEach(mail => {
+    const body = mail.getPlainBody();
+    console.log(mail.getSubject());
+    const resultString = askToChatGPT(systemContent, body.substring(0, 1000));
+    console.log(resultString);
+    if(resultString === null){
+      return;
+    } 
+    const result = JSON.parse(resultString);
+    console.log(result);
+  });
 }
