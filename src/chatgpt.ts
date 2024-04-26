@@ -28,7 +28,7 @@ function askToChatGPT(systemContent: string, userContent: string): string | null
     method: 'post',
     headers: headers,
     payload: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4-turbo',
       max_tokens: 2048,
       temperature: 0,
       messages: messages
@@ -40,7 +40,7 @@ function askToChatGPT(systemContent: string, userContent: string): string | null
     const responseText: string = UrlFetchApp.fetch(apiUrl, options).getContentText();
     const response = JSON.parse(responseText);
     // レスポンスの内容を返す
-    if(response == "null"){
+    if(response == null){
       return null;
     }
     return response.choices[0].message.content;
