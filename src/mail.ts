@@ -34,3 +34,13 @@ function formatGmailDate(message: GoogleAppsScript.Gmail.GmailMessage, format: s
   
   return formattedDate;
 }
+
+function getChromePermalink(thread: GoogleAppsScript.Gmail.GmailThread): string {
+  // スレッドからパーマリンクを取得
+  const permalink = thread.getPermalink();
+  
+  // パーマリンクのURLのスキームを変更
+  const replacedUrl = permalink.replace("https://", "googlechrome://");
+  
+  return replacedUrl;
+}
