@@ -7,27 +7,8 @@ function getRecentEmails(count: number): GoogleAppsScript.Gmail.GmailThread[] {
 function getLabeledEmailThreads(labelName: string, count: number): GoogleAppsScript.Gmail.GmailThread[] {
   let label = GmailApp.getUserLabelByName(labelName);
   let threads = label.getThreads(0, count);
-  
+
   return threads;
-}
-
-/**
- * Gmailのメッセージに対するリンクを生成する関数。
- * 
- * @param {GoogleAppsScript.Gmail.GmailMessage} message Gmailのメッセージオブジェクト
- * @returns {string} Gmailメッセージへの直接リンク
- */
-function getMailPermalink(message: GoogleAppsScript.Gmail.GmailMessage): string {
-  // GmailのベースURL
-  const gmailBaseUrl: string = "https://mail.google.com/mail/u/0/#inbox";
-
-  // GmailのメッセージIDを取得
-  const messageId: string = message.getId();
-
-  // Gmailリンクを生成
-  const gmailLink: string = `${gmailBaseUrl}/${messageId}`;
-  
-  return gmailLink;
 }
 
 /**
