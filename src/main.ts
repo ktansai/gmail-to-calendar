@@ -1,4 +1,6 @@
-const alreadyCheckedLabel = "GPT"
+const targetMailLabel = "GPT/willCheck"
+const alreadyCheckedLabel = "GPT/didCheck"
+
 const systemContent = `
 メールの内容を読んで、下記の場合に該当する場合は、その内容をJSON形式で返してください。
 - ホテルや映画館や新幹線、サービスなどの予約確認のメール
@@ -26,16 +28,12 @@ startDateのみが分かる場合は、endDateは1時間後の時間を設定し
 `;
 
 function main() {
-    const threads = getRecentEmails(10);
+    const threads = getLabeledEmailThreads(targetMailLabel,10);
 
     threads.forEach((thread) => {
         const messages = thread.getMessages();
         const mail = messages[messages.length - 1];
 
-        if (thread.getLabels().some(l => l.getName() === alreadyCheckedLabel)) {
-            console.log("Skipped an already checked email: " + mail.getSubject());
-            return;
-        }
 
         const body = mail.getPlainBody();
         console.log(mail.getSubject());
@@ -44,6 +42,7 @@ function main() {
             body.substring(0, 1000)
         );
 
+        thread.removeLabel(GmailApp.getUserLabelByName(targetMailLabel));
         thread.addLabel(GmailApp.getUserLabelByName(alreadyCheckedLabel));
 
         console.log(resultString);
