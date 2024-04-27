@@ -36,7 +36,7 @@ startDateのみが分かる場合は、endDateは1時間後の時間を設定し
 `;
 
 function main() {
-    const threads = getLabeledEmailThreads(targetMailLabel, 10);
+    const threads = getLabeledEmailThreads(targetMailLabel, 5);
 
     console.log("gpt-model:" , GPTModel );
 
@@ -48,14 +48,14 @@ function main() {
         const mail = messages[messages.length - 1];
 
         const body = mail.getPlainBody();
-        console.log("メール", mail.getSubject(), thread.getPermalink() );
+        console.log(["メール", mail.getSubject(), thread.getPermalink()].join("\n"));
 
         const resultString = askToChatGPT(
             systemContent,
             body.substring(0, 1000)
         );
 
-        console.log("GPT response:" , resultString);
+        console.log(["GPT response:", resultString].join("\n"));
         if (resultString == null) {
             return;
         }
