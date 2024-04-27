@@ -2,11 +2,8 @@ const targetMailLabel = "GPT/willCheck"
 const alreadyCheckedLabel = "GPT/didCheck"
 
 const systemContent = `
-メールの内容を読んで、下記の場合に該当する場合は、その内容をJSON形式で返してください。
-- ホテルや映画館や新幹線、サービスなどの予約確認のメール
-
+あなたは予約メールを解析してJSON形式で返すアシスタントです。
 JSONのフォーマットは下記を参考にしてください。
-先頭や末尾に\`\`\`などは付けないでください。
 
 例1
 {
@@ -26,13 +23,13 @@ JSONのフォーマットは下記を参考にしてください。
     "location":"佐藤クリニック"
 }
 
-下記の場合はJsonの代わりに、null だけを返してください
+下記の場合は {"title":null} だけを返してください
 - メールの中に予約などの文言が含まれないメールの場合
-- 開始時刻(startDate) が分からない場合
+- startDateが分からない場合
 - 明らかに広告や宣伝などのメールの場合
 
-title は、明確に、誰と、何をするか、などがわかるようにしてください。
-locationが不明の場合は "" を設定してください。
+locationが不明の場合は ""を設定してください。
+例に無いkeyは追加しないでください。
 startDateのみが分かる場合は、endDateは1時間後の時間を設定してください。
 メール1件に対して、最大1つの予定を返してください。配列では返さないでください。
 メールの送信日時をstartDateとして扱わないように気をつけてください。
@@ -41,28 +38,34 @@ startDateのみが分かる場合は、endDateは1時間後の時間を設定し
 function main() {
     const threads = getLabeledEmailThreads(targetMailLabel, 10);
 
+    console.log("gpt-model:" , GPTModel );
+
     threads.forEach((thread) => {
+        thread.removeLabel(GmailApp.getUserLabelByName(targetMailLabel));
+        thread.addLabel(GmailApp.getUserLabelByName(alreadyCheckedLabel));
+
         const messages = thread.getMessages();
         const mail = messages[messages.length - 1];
 
         const body = mail.getPlainBody();
-        console.log(mail.getSubject());
+        console.log("メール", mail.getSubject(), thread.getPermalink() );
+
         const resultString = askToChatGPT(
             systemContent,
             body.substring(0, 1000)
         );
 
-        thread.removeLabel(GmailApp.getUserLabelByName(targetMailLabel));
-        thread.addLabel(GmailApp.getUserLabelByName(alreadyCheckedLabel));
-
-        console.log(resultString);
+        console.log("GPT response:" , resultString);
         if (resultString == null) {
             return;
         }
         const result = JSON.parse(resultString);
-        console.log(result);
 
-        if (result == null || result.startDate == null || result.endDate == null) {
+        if (result == null || 
+            result.startDate == null || 
+            result.endDate == null ||
+            result.title == null
+        ) {
             return;
         }
 

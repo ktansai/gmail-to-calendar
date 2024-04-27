@@ -1,3 +1,4 @@
+const GPTModel = 'gpt-4-turbo';
 
 function askToChatGPT(systemContent: string, userContent: string): string | null {
   // スクリプトプロパティからOpenAIのAPIキーを取得
@@ -28,10 +29,11 @@ function askToChatGPT(systemContent: string, userContent: string): string | null
     method: 'post',
     headers: headers,
     payload: JSON.stringify({
-      model: 'gpt-4-turbo',
+      model: GPTModel,
       max_tokens: 2048,
       temperature: 0,
-      messages: messages
+      messages: messages,
+      response_format: {"type": "json_object"}
     })
   };
 
