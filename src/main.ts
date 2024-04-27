@@ -52,8 +52,8 @@ function main() {
             body.substring(0, 1000)
         );
 
-        // thread.removeLabel(GmailApp.getUserLabelByName(targetMailLabel));
-        // thread.addLabel(GmailApp.getUserLabelByName(alreadyCheckedLabel));
+        thread.removeLabel(GmailApp.getUserLabelByName(targetMailLabel));
+        thread.addLabel(GmailApp.getUserLabelByName(alreadyCheckedLabel));
 
         console.log(resultString);
         if (resultString == null) {
