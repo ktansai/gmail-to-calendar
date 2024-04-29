@@ -1,21 +1,28 @@
 ## 概要
-Google Apps Scriptを TypeScript で書いて、claspでデプロイする際のテンプレート
+Gmailに来た予約メールをChatGPTに解析してもらって、Googleカレンダーに自動で登録するGoogle Apps Script
 
-## 使用方法
-### 前提条件 (PCで初回のみ実行)
-- node / npm の環境構築
-- clasp のインストール `npm install -g @google/clasp`
-- `clasp login` で、~/.clasprc.json に認証情報を保存する
+<img src="https://github.com/ktansai/gmail-to-calendar/assets/6256289/09751dc2-2473-47a8-9c59-7e6de064ee0f" width="100%" />
 
-### プロジェクトの作成
-- `npm install` 
-- clasp のインストール `npm install -g @google/clasp`
-- Google Apps Scriptのプロジェクト作成 `clasp create`
+## 仕組み
+- Google Apps Scriptが定期的にメールを確認して、`GPT/willCheck`というラベルがついているメールを取得する。
+  - もし、メールがあった場合、OpenAIのAPIにメールの内容(最大1000文字)を送信して、予約内容をJson形式で返してもらう。
+- 処理が終わった場合は、`GPT/willCheck`のラベルを削除して、`GPT/didCheck` のラベルをつける。
 
-### デプロイ方法
-- 手元でアップロードする際 : `clasp push`
-- pushする際: mainブランチに取り込まれると、自動でデプロイされる
+## セットアップ
+- node/npm/claspのセットアップ
+- `clasp push` で deployする
+- OpenAIのAPIキーを取得 & Google Apps Scriptの `スクリプト プロパティ` に設定
+- OpenAIの`Billing`から、$10程度、APIに課金する
+- createTriggerを実行して、定期実行のトリガーを設定
+- Gmailのメールフィルターで、`GPT/willCheck`のラベルをつけるフィルターを作成する
+  - メール送信者やタイトルでフィルターすること。
 
-### デプロイ設定
-- pushで自動設定する際は、`~/.clasp.json` の情報と、`clasp.json` の情報を githubに保存する
-- `deploy.yml` を.github/workflows/ に配置する
+## 注意
+ChatGPTのAPIにリクエストする度に、課金済みの予算が減るので、デバッグや運用時は気をつけること。
+
+### 工夫
+- 導入前はOpenAIのbillingへの課金額を小さくする。
+- デバッグ時はAPIリクエストが安いモデルの`GPT-3-turbo` に変更する。
+```js
+const GPTModel = 'gpt-4-turbo' // ここを変更することでモデルを変更できる
+```
