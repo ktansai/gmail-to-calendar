@@ -1,4 +1,4 @@
-const GPTModel = 'gpt-4-turbo';
+const GPTModel = 'gpt-4o-mini';
 
 function askToChatGPT(systemContent: string, userContent: string): string | null {
   // スクリプトプロパティからOpenAIのAPIキーを取得
